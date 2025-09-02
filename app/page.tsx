@@ -25,7 +25,6 @@ export default function HomePage() {
         <div className="text-2xl font-extrabold tracking-tight text-[#0b6b6f]">Oren</div>
         <div className="flex gap-3">
           <button onClick={() => router.push("/login")} className="btn-secondary">Login</button>
-          <button onClick={() => router.push("/signup")} className="btn-primary">Request a Demo</button>
         </div>
       </nav>
 
