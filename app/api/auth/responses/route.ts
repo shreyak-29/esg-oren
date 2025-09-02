@@ -10,7 +10,6 @@ export async function GET() {
   console.log("Session:", session);
 
   if (!session?.user?.email) {
-    console.log("❌ Unauthorized request");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -18,7 +17,6 @@ export async function GET() {
   console.log("User lookup:", user);
 
   if (!user) {
-    console.log("❌ User not found");
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
@@ -37,15 +35,12 @@ export async function POST(req: Request) {
   console.log("Session:", session);
 
   if (!session?.user?.email) {
-    console.log("❌ Unauthorized request");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-  console.log("User lookup:", user);
 
   if (!user) {
-    console.log("❌ User not found");
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
