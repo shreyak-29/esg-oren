@@ -19,17 +19,17 @@ model Response {
   id              String   @id @default(cuid())
   userId          String
   financialYear   String
-  electricity     Int
-  renewable       Int
-  fuel            Int
-  emissions       Int
-  employees       Int
-  femaleEmployees Int
-  trainingHours   Int
-  communitySpend  Int
-  boardPercent    Int
+  electricity     Float
+  renewable       Float
+  fuel            Float
+  emissions       Float
+  employees       Float
+  femaleEmployees Float
+  trainingHours   Float
+  communitySpend  Float
+  boardPercent    Float
   privacyPolicy   Boolean
-  revenue         Int
+  revenue         Float
 
   user User @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())

@@ -20,23 +20,49 @@ export default function HomePage() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-center h-screen bg-gray-50">
-      <h1 className="text-3xl font-bold mb-6 text-black">Welcome to ESG Questionnaire</h1>
-      <p className="text-gray-600 mb-8">Track and analyze your ESG metrics easily.</p>
-      <div className="flex gap-4">
-        <button
-          onClick={() => router.push("/login")}
-          className="bg-green-600 text-white px-6 py-2 rounded-lg shadow hover:bg-green-700"
-        >
-          Login
-        </button>
-        <button
-          onClick={() => router.push("/signup")}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700"
-        >
-          Signup
-        </button>
-      </div>
+    <main className="min-h-screen bg-gradient-to-br from-[#e6f7f9] via-white to-[#eaf4ff]">
+      <nav className="container flex items-center justify-between py-4">
+        <div className="text-2xl font-extrabold tracking-tight text-[#0b6b6f]">Oren</div>
+        <div className="flex gap-3">
+          <button onClick={() => router.push("/login")} className="btn-secondary">Login</button>
+          <button onClick={() => router.push("/signup")} className="btn-primary">Request a Demo</button>
+        </div>
+      </nav>
+
+      <section className="container grid md:grid-cols-2 gap-8 py-12 items-center">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-bold leading-tight text-[#0b6b6f]">
+            All Your Sustainability Data and Stakeholders Connected in One Place
+          </h1>
+          <p className="mt-4 text-gray-700 max-w-xl">
+            Capture ESG metrics across years, track progress in real-time, and export polished reports.
+          </p>
+          <div className="mt-6 flex gap-3">
+            <button onClick={()=>router.push("/signup")} className="btn-primary">Get Started</button>
+            <button onClick={()=>router.push("/login")} className="btn-secondary">Sign In</button>
+          </div>
+        </div>
+        <div className="rounded-2xl border bg-white p-6 shadow-sm">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-3 rounded-lg bg-teal-50">
+              <p className="text-xs text-gray-500">Carbon Intensity</p>
+              <p className="text-2xl font-semibold text-[#0b6b6f]">0.123</p>
+            </div>
+            <div className="p-3 rounded-lg bg-indigo-50">
+              <p className="text-xs text-gray-500">Renewable %</p>
+              <p className="text-2xl font-semibold text-[#0b6b6f]">64.2%</p>
+            </div>
+            <div className="p-3 rounded-lg bg-cyan-50">
+              <p className="text-xs text-gray-500">Diversity %</p>
+              <p className="text-2xl font-semibold text-[#0b6b6f]">42.0%</p>
+            </div>
+            <div className="p-3 rounded-lg bg-sky-50">
+              <p className="text-xs text-gray-500">Community %</p>
+              <p className="text-2xl font-semibold text-[#0b6b6f]">1.3%</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

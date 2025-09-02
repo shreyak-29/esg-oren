@@ -33,11 +33,11 @@ button {
 
 /* Button variants */
 .btn-primary {
-  @apply bg-blue-600 text-black hover:bg-blue-700;
+  @apply bg-[#0b6b6f] text-white hover:bg-[#095a5d];
 }
 
 .btn-secondary {
-  @apply bg-green-600 text-white hover:bg-green-700;
+  @apply bg-[#1f9ba8] text-white hover:bg-[#178a96];
 }
 
 /* Disabled button style */
@@ -47,7 +47,7 @@ button:disabled {
 
 /* Form Inputs */
 input, select, textarea {
-  @apply border border-gray-300 rounded-lg px-3 py-2 w-full mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
+  @apply border border-gray-300 rounded-lg px-3 py-2 w-full mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 placeholder:text-gray-400;
 }
 
 /* Utility container class */
