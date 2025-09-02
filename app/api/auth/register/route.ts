@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ message: "User created", user }, { status: 201 });
-  } catch {
+  } catch (err) {
     return NextResponse.json({ error: "User already exists" }, { status: 400 });
   }
 }
