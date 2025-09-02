@@ -34,7 +34,7 @@ const emptyRow: Row = {
 };
 
 export default function FormPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>([emptyRow]);
 
@@ -60,8 +60,8 @@ export default function FormPage() {
       const isNumberField: Array<keyof Row> = [
         "electricity","renewable","fuel","emissions","employees","femaleEmployees","trainingHours","communitySpend","boardPercent","revenue"
       ];
-      // @ts-expect-error narrow later
-      next[index][name] = isNumberField.includes(name) ? (value === "" ? "" : Number(value)) : (value as any);
+  // @ts-expect-error narrow later
+  next[index][name] = isNumberField.includes(name) ? (value === "" ? "" : Number(value)) : (value as Row[keyof Row]);
       return next;
     });
   };
