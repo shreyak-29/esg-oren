@@ -5,8 +5,7 @@ import Link from "next/link";
 export default function SignupPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("
-");
+  const [error, setError] = useState("");
 
   const handleChange = (e: any) => setForm({ ...form, [e.target.name]: e.target.value });
 
