@@ -34,7 +34,7 @@ const emptyRow: Row = {
 };
 
 export default function FormPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>([emptyRow]);
 
