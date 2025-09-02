@@ -1,7 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-   binaryTargets = ["native", "debian-openssl-1.1.x"]
-
 }
 
 datasource db {
@@ -10,9 +8,9 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   name      String
-  email     String   @unique
+  email     String     @unique
   password  String
   responses Response[]
 }
@@ -21,18 +19,17 @@ model Response {
   id              String   @id @default(cuid())
   userId          String
   financialYear   String
-  electricity     Float
-  renewable       Float
-  fuel            Float
-  emissions       Float
-  employees       Float
-  femaleEmployees Float
-  trainingHours   Float
-  communitySpend  Float
-  boardPercent    Float
+  electricity     Int
+  renewable       Int
+  fuel            Int
+  emissions       Int
+  employees       Int
+  femaleEmployees Int
+  trainingHours   Int
+  communitySpend  Int
+  boardPercent    Int
   privacyPolicy   Boolean
-  revenue         Float
-
-  user User @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  revenue         Int
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id])
 }

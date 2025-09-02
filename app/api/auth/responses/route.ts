@@ -4,14 +4,26 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 export async function GET() {
+  console.log("Entering GET /api/auth/responses");
+
   const session = await getServerSession(authOptions);
+  console.log("Session:", session);
+
   if (!session?.user?.email) {
+    console.log("❌ Unauthorized request");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  console.log("User lookup:", user);
+
+  if (!user) {
+    console.log("❌ User not found");
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
   const responses = await prisma.response.findMany({
-    where: { userId: user!.id },
+    where: { userId: user.id },
     orderBy: { createdAt: "desc" },
   });
 
@@ -19,12 +31,24 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  console.log("Entering POST /api/auth/responses");
+
   const session = await getServerSession(authOptions);
+  console.log("Session:", session);
+
   if (!session?.user?.email) {
+    console.log("❌ Unauthorized request");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  console.log("User lookup:", user);
+
+  if (!user) {
+    console.log("❌ User not found");
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
   const body = await req.json();
 
   // Accept either a single object or an array of responses
@@ -32,8 +56,8 @@ export async function POST(req: Request) {
 
   // Normalize and coerce types
   const rows = payload.map((item) => ({
-    userId: user!.id,
-    financialYear: String(item.year || item.financialYear || ""),
+    userId: user.id,
+    financialYear: item.year?.toString() ?? item.financialYear?.toString() ?? "",
     electricity: Number(item.electricity ?? 0),
     renewable: Number(item.renewable ?? 0),
     fuel: Number(item.fuel ?? 0),
@@ -57,6 +81,7 @@ export async function POST(req: Request) {
     );
     return NextResponse.json(created, { status: 201 });
   } else {
+    
     const created = await prisma.response.create({ data: rows[0] });
     return NextResponse.json(created, { status: 201 });
   }

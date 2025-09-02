@@ -5,32 +5,32 @@ import { useRouter } from "next/navigation";
 
 type Row = {
   year: string;
-  electricity: number | "";
-  renewable: number | "";
-  fuel: number | "";
-  emissions: number | "";
-  employees: number | "";
-  femaleEmployees: number | "";
-  trainingHours: number | "";
-  communitySpend: number | "";
-  boardPercent: number | "";
+  electricity: number;
+  renewable: number;
+  fuel: number;
+  emissions: number;
+  employees: number;
+  femaleEmployees: number;
+  trainingHours: number;
+  communitySpend: number;
+  boardPercent: number;
   privacyPolicy: "Yes" | "No";
-  revenue: number | "";
+  revenue: number;
 };
 
 const emptyRow: Row = {
   year: "",
-  electricity: "",
-  renewable: "",
-  fuel: "",
-  emissions: "",
-  employees: "",
-  femaleEmployees: "",
-  trainingHours: "",
-  communitySpend: "",
-  boardPercent: "",
+  electricity: 0,
+  renewable: 0,
+  fuel: 0,
+  emissions: 0,
+  employees: 0,
+  femaleEmployees: 0,
+  trainingHours: 0,
+  communitySpend: 0,
+  boardPercent: 0,
   privacyPolicy: "No",
-  revenue: "",
+  revenue: 0,
 };
 
 export default function FormPage() {
@@ -54,14 +54,16 @@ export default function FormPage() {
     })),
   [rows]);
 
-  const update = (index: number, name: keyof Row, value: string) => {
+  const update = (index: number, name: keyof Row, value: string | number) => {
     setRows((prev) => {
       const next = [...prev];
-      const isNumberField: Array<keyof Row> = [
-        "electricity","renewable","fuel","emissions","employees","femaleEmployees","trainingHours","communitySpend","boardPercent","revenue"
-      ];
-  // @ts-expect-error narrow later
-  next[index][name] = isNumberField.includes(name) ? (value === "" ? "" : Number(value)) : (value as Row[keyof Row]);
+      if (name === "year") {
+        next[index][name] = value as string;
+      } else if (name === "privacyPolicy") {
+        next[index][name] = value as "Yes" | "No";
+      } else {
+        next[index][name] = value as number;
+      }
       return next;
     });
   };
@@ -125,39 +127,39 @@ export default function FormPage() {
               </div>
               <div>
                 <label className="text-sm text-gray-600">Total electricity consumption (kWh)</label>
-                <input type="number" value={row.electricity} placeholder="0" onChange={(e)=>update(idx, "electricity", e.target.value)} />
+                <input type="number" value={row.electricity} placeholder="0" onChange={(e)=>update(idx, "electricity", Number(e.target.value) || 0)} />
               </div>
               <div>
                 <label className="text-sm text-gray-600">Renewable electricity consumption (kWh)</label>
-                <input type="number" value={row.renewable} placeholder="0" onChange={(e)=>update(idx, "renewable", e.target.value)} />
+                <input type="number" value={row.renewable} placeholder="0" onChange={(e)=>update(idx, "renewable", Number(e.target.value) || 0)} />
               </div>
               <div>
                 <label className="text-sm text-gray-600">Total fuel consumption (liters)</label>
-                <input type="number" value={row.fuel} placeholder="0" onChange={(e)=>update(idx, "fuel", e.target.value)} />
+                <input type="number" value={row.fuel} placeholder="0" onChange={(e)=>update(idx, "fuel", Number(e.target.value) || 0)} />
               </div>
               <div>
                 <label className="text-sm text-gray-600">Carbon emissions (T CO2e)</label>
-                <input type="number" value={row.emissions} placeholder="0" onChange={(e)=>update(idx, "emissions", e.target.value)} />
+                <input type="number" value={row.emissions} placeholder="0" onChange={(e)=>update(idx, "emissions", Number(e.target.value) || 0)} />
               </div>
               <div>
                 <label className="text-sm text-gray-600">Total number of employees</label>
-                <input type="number" value={row.employees} placeholder="0" onChange={(e)=>update(idx, "employees", e.target.value)} />
+                <input type="number" value={row.employees} placeholder="0" onChange={(e)=>update(idx, "employees", Number(e.target.value) || 0)} />
               </div>
               <div>
                 <label className="text-sm text-gray-600">Number of female employees</label>
-                <input type="number" value={row.femaleEmployees} placeholder="0" onChange={(e)=>update(idx, "femaleEmployees", e.target.value)} />
+                <input type="number" value={row.femaleEmployees} placeholder="0" onChange={(e)=>update(idx, "femaleEmployees", Number(e.target.value) || 0)} />
               </div>
               <div>
                 <label className="text-sm text-gray-600">Average training hours per employee (per year)</label>
-                <input type="number" value={row.trainingHours} placeholder="0" onChange={(e)=>update(idx, "trainingHours", e.target.value)} />
+                <input type="number" value={row.trainingHours} placeholder="0" onChange={(e)=>update(idx, "trainingHours", Number(e.target.value) || 0)} />
               </div>
               <div>
                 <label className="text-sm text-gray-600">Community investment spend (INR)</label>
-                <input type="number" value={row.communitySpend} placeholder="0" onChange={(e)=>update(idx, "communitySpend", e.target.value)} />
+                <input type="number" value={row.communitySpend} placeholder="0" onChange={(e)=>update(idx, "communitySpend", Number(e.target.value) || 0)} />
               </div>
               <div>
                 <label className="text-sm text-gray-600">% of independent board members</label>
-                <input type="number" value={row.boardPercent} placeholder="0" onChange={(e)=>update(idx, "boardPercent", e.target.value)} />
+                <input type="number" value={row.boardPercent} placeholder="0" onChange={(e)=>update(idx, "boardPercent", Number(e.target.value) || 0)} />
               </div>
               <div>
                 <label className="text-sm text-gray-600">Data privacy policy</label>
@@ -168,7 +170,7 @@ export default function FormPage() {
               </div>
               <div>
                 <label className="text-sm text-gray-600">Total revenue (INR)</label>
-                <input type="number" value={row.revenue} placeholder="0" onChange={(e)=>update(idx, "revenue", e.target.value)} />
+                <input type="number" value={row.revenue} placeholder="0" onChange={(e)=>update(idx, "revenue", Number(e.target.value) || 0)} />
               </div>
             </div>
 
