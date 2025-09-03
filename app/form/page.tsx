@@ -18,6 +18,15 @@ type Row = {
   revenue: number;
 };
 
+type RowErrors = {
+  employees?: string;
+  femaleEmployees?: string;
+  electricity?: string;
+  renewable?: string;
+  revenue?: string;
+  communitySpend?: string;
+};
+
 const emptyRow: Row = {
   year: "",
   electricity: 0,
@@ -37,6 +46,7 @@ export default function FormPage() {
   const { status } = useSession();
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>([emptyRow]);
+  const [errors, setErrors] = useState<RowErrors[]>([{}]);
 
   // Only redirect after auth status is known
   useEffect(() => {
@@ -57,19 +67,116 @@ export default function FormPage() {
   const update = (index: number, name: keyof Row, value: string | number) => {
     setRows((prev) => {
       const next = [...prev];
+      const row = { ...next[index] };
+
       if (name === "year") {
-        next[index][name] = value as string;
+        row[name] = value as string;
       } else if (name === "privacyPolicy") {
-        next[index][name] = value as "Yes" | "No";
+        row[name] = value as "Yes" | "No";
       } else {
-        next[index][name] = value as number;
+        // Clamp numeric inputs to be non-negative numbers
+        const numericValue = Math.max(0, Number(value) || 0);
+        row[name] = numericValue as number;
+
+        // Enforce constraints for percentage-like relationships (numerator <= denominator)
+        if (name === "employees") {
+          if (row.femaleEmployees > numericValue) row.femaleEmployees = numericValue;
+        }
+        if (name === "femaleEmployees") {
+          if (row.femaleEmployees > row.employees) row.femaleEmployees = row.employees;
+        }
+
+        if (name === "electricity") {
+          if (row.renewable > numericValue) row.renewable = numericValue;
+        }
+        if (name === "renewable") {
+          if (row.renewable > row.electricity) row.renewable = row.electricity;
+        }
+
+        if (name === "revenue") {
+          if (row.communitySpend > numericValue) row.communitySpend = numericValue;
+        }
+        if (name === "communitySpend") {
+          if (row.communitySpend > row.revenue) row.communitySpend = row.revenue;
+        }
+
+        // Update error messages based on attempted values and relationships
+        setErrors((prevErrs) => {
+          const nextErrs = [...prevErrs];
+          const err = { ...(nextErrs[index] || {}) } as RowErrors;
+
+          // femaleEmployees <= employees
+          if (name === "femaleEmployees") {
+            if (numericValue > row.employees) {
+              err.femaleEmployees = `Cannot exceed total employees. Adjusted to ${row.employees}.`;
+              row.femaleEmployees = row.employees;
+            } else {
+              delete err.femaleEmployees;
+            }
+          }
+          if (name === "employees") {
+            if (row.femaleEmployees > numericValue) {
+              err.femaleEmployees = `Cannot exceed total employees. Adjusted to ${numericValue}.`;
+              row.femaleEmployees = numericValue;
+            } else {
+              delete err.femaleEmployees;
+            }
+          }
+
+          // renewable <= electricity
+          if (name === "renewable") {
+            if (numericValue > row.electricity) {
+              err.renewable = `Cannot exceed total electricity. Adjusted to ${row.electricity}.`;
+              row.renewable = row.electricity;
+            } else {
+              delete err.renewable;
+            }
+          }
+          if (name === "electricity") {
+            if (row.renewable > numericValue) {
+              err.renewable = `Cannot exceed total electricity. Adjusted to ${numericValue}.`;
+              row.renewable = numericValue;
+            } else {
+              delete err.renewable;
+            }
+          }
+
+          // communitySpend <= revenue
+          if (name === "communitySpend") {
+            if (numericValue > row.revenue) {
+              err.communitySpend = `Cannot exceed total revenue. Adjusted to ${row.revenue}.`;
+              row.communitySpend = row.revenue;
+            } else {
+              delete err.communitySpend;
+            }
+          }
+          if (name === "revenue") {
+            if (row.communitySpend > numericValue) {
+              err.communitySpend = `Cannot exceed total revenue. Adjusted to ${numericValue}.`;
+              row.communitySpend = numericValue;
+            } else {
+              delete err.communitySpend;
+            }
+          }
+
+          nextErrs[index] = err;
+          return nextErrs;
+        });
       }
+
+      next[index] = row;
       return next;
     });
   };
 
-  const addYear = () => setRows((r) => [...r, { ...emptyRow }]);
-  const removeYear = (i: number) => setRows((r) => r.filter((_, idx) => idx !== i));
+  const addYear = () => {
+    setRows((r) => [...r, { ...emptyRow }]);
+    setErrors((e) => [...e, {}]);
+  };
+  const removeYear = (i: number) => {
+    setRows((r) => r.filter((_, idx) => idx !== i));
+    setErrors((e) => e.filter((_, idx) => idx !== i));
+  };
 
   const handleSubmit = async () => {
     const res = await fetch("/api/auth/responses", {
@@ -128,10 +235,12 @@ export default function FormPage() {
               <div>
                 <label className="text-sm text-gray-600">Total electricity consumption (kWh)</label>
                 <input type="number" value={row.electricity === 0 ? "" : row.electricity} placeholder="0" onChange={(e)=>update(idx, "electricity", e.target.value === "" ? 0 : Number(e.target.value))} />
+                {errors[idx]?.electricity && <p className="text-xs text-red-600 mt-1">{errors[idx]?.electricity}</p>}
               </div>
               <div>
                 <label className="text-sm text-gray-600">Renewable electricity consumption (kWh)</label>
                 <input type="number" value={row.renewable === 0 ? "" : row.renewable} placeholder="0" onChange={(e)=>update(idx, "renewable", e.target.value === "" ? 0 : Number(e.target.value))} />
+                {errors[idx]?.renewable && <p className="text-xs text-red-600 mt-1">{errors[idx]?.renewable}</p>}
               </div>
               <div>
                 <label className="text-sm text-gray-600">Total fuel consumption (liters)</label>
@@ -144,18 +253,26 @@ export default function FormPage() {
               <div>
                 <label className="text-sm text-gray-600">Total number of employees</label>
                 <input type="number" value={row.employees === 0 ? "" : row.employees} placeholder="0" onChange={(e)=>update(idx, "employees", e.target.value === "" ? 0 : Number(e.target.value))} />
+                {errors[idx]?.employees && <p className="text-xs text-red-600 mt-1">{errors[idx]?.employees}</p>}
               </div>
               <div>
                 <label className="text-sm text-gray-600">Number of female employees</label>
                 <input type="number" value={row.femaleEmployees === 0 ? "" : row.femaleEmployees} placeholder="0" onChange={(e)=>update(idx, "femaleEmployees", e.target.value === "" ? 0 : Number(e.target.value))} />
+                {errors[idx]?.femaleEmployees && <p className="text-xs text-red-600 mt-1">{errors[idx]?.femaleEmployees}</p>}
               </div>
               <div>
-                <label className="text-sm text-gray-600">Average training hours per employee (per year)</label>
+                <label className="text-sm text-gray-600">Avg. annual training hours/employee</label>
                 <input type="number" value={row.trainingHours === 0 ? "" : row.trainingHours} placeholder="0" onChange={(e)=>update(idx, "trainingHours", e.target.value === "" ? 0 : Number(e.target.value))} />
               </div>
               <div>
+                <label className="text-sm text-gray-600">Total revenue (INR)</label>
+                <input type="number" value={row.revenue === 0 ? "" : row.revenue} placeholder="0" onChange={(e)=>update(idx, "revenue", e.target.value === "" ? 0 : Number(e.target.value))} />
+                {errors[idx]?.revenue && <p className="text-xs text-red-600 mt-1">{errors[idx]?.revenue}</p>}
+              </div>
+                <div>
                 <label className="text-sm text-gray-600">Community investment spend (INR)</label>
                 <input type="number" value={row.communitySpend === 0 ? "" : row.communitySpend} placeholder="0" onChange={(e)=>update(idx, "communitySpend", e.target.value === "" ? 0 : Number(e.target.value))} />
+                {errors[idx]?.communitySpend && <p className="text-xs text-red-600 mt-1">{errors[idx]?.communitySpend}</p>}
               </div>
               <div>
                 <label className="text-sm text-gray-600">% of independent board members</label>
@@ -168,10 +285,8 @@ export default function FormPage() {
                   <option>Yes</option>
                 </select>
               </div>
-              <div>
-                <label className="text-sm text-gray-600">Total revenue (INR)</label>
-                <input type="number" value={row.revenue === 0 ? "" : row.revenue} placeholder="0" onChange={(e)=>update(idx, "revenue", e.target.value === "" ? 0 : Number(e.target.value))} />
-              </div>
+              
+            
             </div>
 
             <div className="mt-4 grid md:grid-cols-4 gap-4 bg-teal-50 rounded-xl p-3">
