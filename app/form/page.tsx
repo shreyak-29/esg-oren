@@ -19,6 +19,7 @@ type Row = {
 };
 
 type RowErrors = {
+  year?: string;
   employees?: string;
   femaleEmployees?: string;
   electricity?: string;
@@ -68,16 +69,24 @@ export default function FormPage() {
     setRows((prev) => {
       const next = [...prev];
       const row = { ...next[index] };
-
       if (name === "year") {
-        row[name] = value as string;
+        row.year = value as string;
       } else if (name === "privacyPolicy") {
-        row[name] = value as "Yes" | "No";
-      } else {
+        row.privacyPolicy = value as "Yes" | "No";
+      }
+      if (name === "year") {
+        setErrors((prevErrs) => {
+          const nextErrs = [...prevErrs];
+          const err = { ...(nextErrs[index] || {}) } as RowErrors;
+          err.year = value === "" ? "Financial Year cannot be empty." : undefined;
+          nextErrs[index] = err;
+          return nextErrs;
+        });
+      }
+      if (name !== "year" && name !== "privacyPolicy") {
         // Clamp numeric inputs to be non-negative numbers
         const numericValue = Math.max(0, Number(value) || 0);
         row[name] = numericValue as number;
-
         // Enforce constraints for percentage-like relationships (numerator <= denominator)
         if (name === "employees") {
           if (row.femaleEmployees > numericValue) row.femaleEmployees = numericValue;
@@ -85,26 +94,22 @@ export default function FormPage() {
         if (name === "femaleEmployees") {
           if (row.femaleEmployees > row.employees) row.femaleEmployees = row.employees;
         }
-
         if (name === "electricity") {
           if (row.renewable > numericValue) row.renewable = numericValue;
         }
         if (name === "renewable") {
           if (row.renewable > row.electricity) row.renewable = row.electricity;
         }
-
         if (name === "revenue") {
           if (row.communitySpend > numericValue) row.communitySpend = numericValue;
         }
         if (name === "communitySpend") {
           if (row.communitySpend > row.revenue) row.communitySpend = row.revenue;
         }
-
         // Update error messages based on attempted values and relationships
         setErrors((prevErrs) => {
           const nextErrs = [...prevErrs];
           const err = { ...(nextErrs[index] || {}) } as RowErrors;
-
           // femaleEmployees <= employees
           if (name === "femaleEmployees") {
             if (numericValue > row.employees) {
@@ -122,7 +127,6 @@ export default function FormPage() {
               delete err.femaleEmployees;
             }
           }
-
           // renewable <= electricity
           if (name === "renewable") {
             if (numericValue > row.electricity) {
@@ -140,7 +144,6 @@ export default function FormPage() {
               delete err.renewable;
             }
           }
-
           // communitySpend <= revenue
           if (name === "communitySpend") {
             if (numericValue > row.revenue) {
@@ -158,27 +161,43 @@ export default function FormPage() {
               delete err.communitySpend;
             }
           }
-
           nextErrs[index] = err;
           return nextErrs;
         });
       }
-
       next[index] = row;
       return next;
     });
   };
 
   const addYear = () => {
-    setRows((r) => [...r, { ...emptyRow }]);
-    setErrors((e) => [...e, {}]);
+  setRows((r) => [...r, { ...emptyRow }]);
+  setErrors((e) => [...e, {}]);
   };
   const removeYear = (i: number) => {
-    setRows((r) => r.filter((_, idx) => idx !== i));
-    setErrors((e) => e.filter((_, idx) => idx !== i));
+  setRows((r) => r.filter((_, idx) => idx !== i));
+  setErrors((e) => e.filter((_, idx) => idx !== i));
   };
 
   const handleSubmit = async () => {
+    // Validate all years before submitting
+    let hasYearError = false;
+    const newErrors = rows.map((row, idx) => {
+      const err: RowErrors = { ...errors[idx] };
+      if (!row.year || row.year.trim() === "") {
+        err.year = "Financial Year cannot be empty.";
+        hasYearError = true;
+      } else {
+        delete err.year;
+      }
+      return err;
+    });
+    setErrors(newErrors);
+    if (hasYearError) {
+      alert("Please fill all Financial Year fields.");
+      return;
+    }
+    // ...existing code...
     const res = await fetch("/api/auth/responses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -230,7 +249,8 @@ export default function FormPage() {
             <div className="grid md:grid-cols-3 gap-4">
               <div>
                 <label className="text-sm text-gray-600">Financial Year</label>
-                <input value={row.year} name="year" placeholder="FY 2023-24" onChange={(e)=>update(idx, "year", e.target.value)} />
+                <input value={row.year} name="year" placeholder="2023" onChange={(e)=>update(idx, "year", e.target.value)} />
+                {errors[idx]?.year && <p className="text-xs text-red-600 mt-1">{errors[idx]?.year}</p>}
               </div>
               <div>
                 <label className="text-sm text-gray-600">Total electricity consumption (kWh)</label>
